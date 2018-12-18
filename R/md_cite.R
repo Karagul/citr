@@ -11,7 +11,7 @@
 #'    are imported from Zotero/Juris-M rather than from the Bib(La)TeX-file. The Bib(La)TeX-file
 #'    is then updated to include the inserted reference.
 #'
-#' @return If the bibliography contains exactly one match the formated citation is returned, otherwise
+#' @return If the bibliography contains exactly one match the formatted citation is returned, otherwise
 #'    returns \code{NULL}. \code{md_cite} returns an in-text citation (\code{"@foo2016"}), \code{md_cite}
 #'    returns an in-parenthesis citation (\code{"[@foo2016]"}).
 #'
@@ -31,6 +31,7 @@ md_cite <- function(
   , bib_file = getOption("citr.bibliography_path")
   , cache = TRUE
   , use_betterbiblatex = getOption("citr.use_betterbiblatex")
+  , encoding = getOption("citr.encoding")
 ) {
   assert_that(is.flag(in_paren))
 
@@ -51,7 +52,7 @@ md_cite <- function(
 
   # Add references to bib_file
   if(use_betterbiblatex && betterbiblatex_available()) {
-    append_bib_entries(selected_entries, bib_file)
+    append_bib_entries(selected_entries, bib_file, encoding)
   }
 
   # Return citation keys
@@ -83,9 +84,9 @@ paste_citation_keys <- function(keys, in_paren = FALSE) {
   }
 }
 
-append_bib_entries <- function(x, bib_file) {
+append_bib_entries <- function(x, bib_file, encoding) {
   if(file.exists(bib_file)) {
-    existing_bib <- RefManageR::ReadBib(bib_file, check = FALSE)
+    existing_bib <- RefManageR::ReadBib(bib_file, check = FALSE, .Encoding = encoding)
     new_references <- !names(x) %in% names(existing_bib)
     if(sum(new_references) > 0) RefManageR::WriteBib(x[new_references], file = bib_file, append = TRUE)
   } else {

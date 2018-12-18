@@ -4,8 +4,12 @@
 \alias{query_bib}
 \title{Query bibliography}
 \usage{
-query_bib(x, bib_file = getOption("citr.bibliography_path"), cache = TRUE,
-  use_betterbiblatex = getOption("citr.use_betterbiblatex"))
+query_bib(x, bib_file = getOption("citr.bibliography_path"),
+  cache = TRUE,
+  use_betterbiblatex = getOption("citr.use_betterbiblatex"),
+  betterbiblatex_format = getOption("citr.betterbiblatex_format"),
+  exclude_betterbiblatex_library = getOption("citr.exclude_betterbiblatex_library"),
+  encoding = getOption("citr.encoding"))
 }
 \arguments{
 \item{x}{Character. Search terms used to filter bibliography (by author, year, title, and journal
@@ -16,9 +20,15 @@ fields); Regex is supported.}
 \item{cache}{Logical. If \code{cache = TRUE} cached bibliography is used, if available. If
 \code{cache = FALSE} bibliography is re-imported on every function call.}
 
-\item{use_betterbiblatex}{Logical. If \code{use_betterbiblatex = TRUE} references are imported from Zotero/Juris-M.
+\item{use_betterbiblatex}{Logical. If \code{use_betterbiblatex = TRUE} references are imported from Zotero/Juris-M.}
+
+\item{betterbiblatex_format}{Charcter. Bibliography format to export from Zotero/Juris-M. Can be either \code{"bibtex"} or \code{"biblatex"}. Ignored if \code{use_betterbiblatex = FALSE}.
 Requires that the \href{https://github.com/retorquere/zotero-better-bibtex}{Better Bib(La)TeX} is installed and
 Zotero/Juris-M is running.}
+
+\item{exclude_betterbiblatex_library}{Character. A vector of Zotero/Juris-M library names not to query.}
+
+\item{encoding}{Character. Encoding of the Bib(La)TeX-file.}
 }
 \value{
 Returns list of class \code{\link[RefManageR]{BibEntry}} including all matching bibliography entries.
@@ -36,4 +46,3 @@ The path to the BibTeX-file can be set in the global options and is set to
 \seealso{
 \code{\link{md_cite}}, \code{\link{insert_citation}}
 }
-
