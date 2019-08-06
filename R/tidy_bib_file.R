@@ -16,7 +16,7 @@ tidy_bib_file <- function(
   rmd_file
   , messy_bibliography
   , file = NULL
-  , encoding = getOption("encoding")
+  , encoding = getOption("citr.encoding")
 ) {
   assert_that(is.character(rmd_file))
   assert_that(is.string(messy_bibliography))
@@ -37,10 +37,10 @@ tidy_bib_file <- function(
     stop("The R Markdown file contains no text.")
   }
 
-  manuscript_test <- prep_text(rmd)
+ rmd_text <- prep_text(rmd)
 
-  reference_handles <- unlist(regmatches(manuscript_test, gregexpr("@[^;\\s\\],]+", manuscript_test, useBytes = TRUE)))
-  # reference_handles <- stringi::stri_extract_all(manuscript_test, regex = "@[^;\\s\\],]+")[[1]]
+  reference_handles <- unlist(regmatches(rmd_text, gregexpr("@[^;\\s\\],]+", rmd_text, useBytes = TRUE, perl = TRUE)))
+  # reference_handles <- stringi::stri_extract_all(rmd_text, regex = "@[^;\\s\\],]+")[[1]]
   reference_handles <- gsub("@", "", unique(reference_handles), useBytes = TRUE)
 
   if(length(reference_handles) == 0) stop("Found no references in ", rmd_file)
@@ -55,7 +55,7 @@ tidy_bib_file <- function(
 
   message("Removing ", length(complete_bibliography) - length(unique(necessary_bibliography)), " unneeded bibliography entries.")
 
-  RefManageR::WriteBib(unique(necessary_bibliography), file = file)
+  RefManageR::WriteBib(unique(necessary_bibliography), file = file, useBytes = TRUE, biblatex = getOption("citr.betterbiblatex_format") == "biblatex")
 }
 
 
@@ -67,7 +67,7 @@ prep_text <- function(text){
   text <- gsub("[\r\n]", " ", text)
 
   # don't include front yaml
-  text <- gsub("---.+?---", "", text, useBytes = TRUE)
+  # text <- gsub("---.+?---", "", text, useBytes = TRUE)
 
   # don't include text in code chunks: https://regex101.com/#python
   text <- gsub("```\\{.+?\\}.+?```", "", text, useBytes = TRUE)
@@ -76,13 +76,13 @@ prep_text <- function(text){
   text <- gsub("`r.+?`", "", text, useBytes = TRUE)
 
   # don't include HTML comments
-  text <- gsub("<!--.+?-->", "", text, useBytes = TRUE)
+  # text <- gsub("<!--.+?-->", "", text, useBytes = TRUE)
 
   # don't include inline markdown URLs
   text <- gsub("\\(http.+?\\)", "", text, useBytes = TRUE)
 
   # don't include images with captions
-  text <- gsub("!\\[.+?\\)", "", text, useBytes = TRUE)
+  # text <- gsub("!\\[.+?\\)", "", text, useBytes = TRUE)
 
   # don't include html tags
   text <- gsub("<.+?>|</.+?>", "", text)
@@ -90,8 +90,11 @@ prep_text <- function(text){
   # don't include percent signs because they trip up stringi
   text <- gsub("%", "", text)
 
-  #remove cross-references
+  # remove cross-references
   text <- gsub("\\\\@ref\\(.+?\\)", "", text, useBytes = TRUE)
+
+  # remove e-mail addresses (http://emailregex.com/)
+  text <- gsub("[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}", "", text, useBytes = TRUE)
 
   text
 }
